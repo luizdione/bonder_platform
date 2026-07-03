@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bonder"
-version = "0.1.0"
+version = "0.3.0"
 description = "Plataforma CoIP-MS / AP-MS para identificacao de parceiros no proteoma murino (orquestra SAINT/MiST/DEP/MSstats)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,6 +35,9 @@ bonder = "bonder.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["bonder*"]
+
+[tool.setuptools.package-data]
+bonder = ["web/viewer/*", "web/viewer/**/*", "web/viewer/.htaccess", "web/templates/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

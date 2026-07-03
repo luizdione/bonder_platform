@@ -19,6 +19,23 @@ python -m bonder.cli db sync
 python -m bonder.cli baits check
 ```
 
+### Base de digestao in silico murina (peptideo -> proteina)
+
+Gera o espaco peptidico teorico do proteoma murino (referencia para proteotipia,
+mapeamento peptideo->proteina e o threshold do desenho subtrativo NSs vs WT):
+
+```bash
+python -m bonder.cli db digest          # baixa o proteoma se preciso e digere
+# saida (databases.yaml -> proteome_murine.out_root; no autor: E:\data\proteome_murine):
+#   peptides.tsv, protein_index.tsv, digest_profile.json, digest_manifest.json
+python -m bonder.cli db digest --max-proteins 200   # amostra rapida p/ teste
+python -m bonder.cli db digest --out D:\algum\outro\caminho   # sobrescreve a raiz
+```
+
+Parametros da digestao (enzima, missed cleavages, comprimento, mods) ficam em
+`config/databases.yaml` no bloco `proteome_murine.digestion`. A raiz de saida
+tambem pode ser sobrescrita por `BONDER_PROTEOME_MURINE`.
+
 ## 2. (Opcional) Gerar a saida de busca a partir dos .raw
 
 Se voce so tem os arquivos brutos:
@@ -120,6 +137,23 @@ sanidade dos scripts e processos, sem depender de GPU nem de R. Tambem por API:
 curl http://localhost:8080/api/health/full
 curl -X POST http://localhost:8080/api/health/selftest
 ```
+
+## Versao hospedada (Bonder Viewer) - so visualizacao/edicao
+
+Para publicar os resultados num site (ex.: Hostinger, atras de senha), gere um
+bundle **estatico** (sem Python/R/GPU no servidor) com o viewer + os resultados
+ja calculados localmente:
+
+```bash
+python -m bonder.cli export --out dist_web          # todas as corridas de runs/
+python -m bonder.cli export --out dist_web --run run_NSs_vs_CTRL_20260702_120000
+```
+
+O `dist_web/` sai pronto (`index.html`, `lib/`, `config.json`, `runs/`, `docs/`,
+`.htaccess`). Envie o conteudo para a pasta do subdominio e proteja por senha.
+Passo a passo completo do deploy: `bonder/web/viewer/README_DEPLOY.md` (tambem vai
+dentro do bundle). O viewer permite **curar/editar** os interatores (validado,
+confianca, nota), salvos no navegador e exportaveis em JSON/TSV.
 
 ## Dicas de GPU (compartilhar com o Ollama)
 

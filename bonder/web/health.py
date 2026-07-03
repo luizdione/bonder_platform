@@ -164,7 +164,39 @@ def check_databases() -> Dict[str, Any]:
         "cached_sources": sorted(entries.keys()),
         "n_cached": len(entries),
         "search_db_fasta": search_db.exists(),
+        "proteome_murine_digest": check_digest(cfg),
     }
+
+
+def check_digest(cfg=None) -> Dict[str, Any]:
+    """Estado da base de digestao in silico murina (peptideo->proteina).
+
+    Reporta se a base existe em out_root (proteome_murine em databases.yaml) e,
+    se houver, um resumo do digest_profile.json (contagens + fracao proteotipica).
+    """
+    import json
+    cfg = cfg or load_config()
+    pm = cfg.databases.get("proteome_murine", {}) or {}
+    raw = os.environ.get("BONDER_PROTEOME_MURINE") or pm.get("out_root") \
+        or str(cfg.data_root / "proteome_murine")
+    root = Path(raw).expanduser()
+    peptides = root / "peptides.tsv"
+    profile_p = root / "digest_profile.json"
+    info: Dict[str, Any] = {
+        "out_root": str(root),
+        "exists": peptides.exists(),
+        "params": pm.get("digestion", {}),
+    }
+    if profile_p.exists():
+        try:
+            prof = json.loads(profile_p.read_text(encoding="utf-8"))
+            info["n_proteins"] = prof.get("n_proteins")
+            info["n_peptides"] = prof.get("n_peptides_unique_sequences")
+            info["n_proteotypic"] = prof.get("n_proteotypic_peptides")
+            info["proteotypic_fraction"] = prof.get("proteotypic_fraction")
+        except Exception as e:
+            info["profile_error"] = str(e)
+    return info
 
 
 def check_paths() -> List[Dict[str, Any]]:

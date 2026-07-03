@@ -23,6 +23,10 @@ config/sequences/*.fasta
 # parquet/artefatos intermediarios
 *.parquet
 
+# bundle estatico publicavel gerado por 'bonder export' (artefato de build)
+dist_web/
+*.zip
+
 # ambientes
 .venv/
 venv/

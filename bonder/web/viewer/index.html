@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bonder viewer - interactoma CoIP-MS (proteoma murino)</title>
+<!-- libs vendorizadas (self-contained; sem CDN, funciona atras de Basic Auth/offline) -->
+<script src="lib/cytoscape.min.js"></script>
+<script src="lib/marked.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171b21; --panel2:#1e242c; --line:#2a323c;
+    --fg:#e6e9ee; --muted:#9aa4b2; --accent:#4c8bf5; --ok:#34a853; --warn:#f9ab00; --err:#ea4335;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --line:#d8dee4;
+           --fg:#1b1f24; --muted:#5b6572; --accent:#1a56db; }
+  }
+  *{box-sizing:border-box} body{margin:0;font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif;
+    background:var(--bg);color:var(--fg)}
+  header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);
+    background:var(--panel)}
+  header h1{font-size:16px;margin:0;font-weight:650} .tag{font-size:11px;color:var(--muted)}
+  .badge{margin-left:auto;font-size:12px;padding:4px 10px;border:1px solid var(--line);border-radius:999px}
+  .wrap{display:grid;grid-template-columns:320px 1fr;gap:0;height:calc(100vh - 53px)}
+  aside{border-right:1px solid var(--line);background:var(--panel);padding:16px;overflow:auto}
+  main{padding:16px 20px;overflow:auto}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,select,button{padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+    background:var(--panel2);color:var(--fg);font:inherit}
+  button{background:var(--accent);color:#fff;border:0;cursor:pointer;font-weight:600}
+  button:hover{filter:brightness(1.08)} button.secondary{background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
+  .runs{margin-top:18px} .run{padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;
+    cursor:pointer;display:flex;justify-content:space-between;gap:8px} .run:hover{border-color:var(--accent)}
+  .run.active{border-color:var(--accent);background:var(--panel2)}
+  .st{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--line)}
+  .st.done{color:var(--ok)} .st.running,.st.queued{color:var(--warn)} .st.error{color:var(--err)}
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:14px;flex-wrap:wrap}
+  .tabs button{background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;
+    border-radius:0;padding:8px 12px;font-weight:600}
+  .tabs button.active{color:var(--fg);border-bottom-color:var(--accent)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px} th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel);cursor:pointer;white-space:nowrap}
+  td input[type=text]{width:100%;padding:3px 6px} td select{padding:3px 6px}
+  .pill{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
+  .pill.alta{color:var(--ok);border-color:var(--ok)} .pill.media{color:var(--warn)} .pill.baixa{color:var(--muted)}
+  #cy{height:520px;background:var(--panel2);border-radius:10px}
+  .kv{display:grid;grid-template-columns:190px 1fr;gap:4px 12px;font-size:13px}
+  .kv div:nth-child(odd){color:var(--muted)}
+  .hint{color:var(--muted);font-size:12px} code{background:var(--panel2);padding:1px 5px;border-radius:5px}
+  .hidden{display:none}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .toolbar input[type=search]{min-width:200px}
+  .chip{font-size:12px;padding:3px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+  h4{margin:14px 0 4px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .docwrap{display:grid;grid-template-columns:240px 1fr;min-height:65vh}
+  .docnav{border-right:1px solid var(--line);padding:10px;overflow:auto}
+  .docnav .cat{font-size:11px;color:var(--muted);text-transform:uppercase;margin:12px 6px 4px}
+  .docnav button{display:block;width:100%;text-align:left;background:transparent;border:0;color:var(--fg);
+    padding:6px 8px;border-radius:6px;margin:0;font:inherit;cursor:pointer}
+  .docnav button:hover{background:var(--panel2)} .docnav button.active{background:var(--panel2);color:var(--accent);font-weight:600}
+  .md{padding:18px 24px;overflow:auto;max-height:78vh;line-height:1.65}
+  .md h1,.md h2,.md h3{border-bottom:1px solid var(--line);padding-bottom:4px;margin:18px 0 10px}
+  .md h1{font-size:22px} .md h2{font-size:18px} .md h3{font-size:15px}
+  .md code{background:var(--panel2);padding:1px 5px;border-radius:5px;font-size:13px}
+  .md pre{background:var(--panel2);padding:12px;border-radius:8px;overflow:auto;border:1px solid var(--line)}
+  .md pre code{background:transparent;padding:0} .md table{width:auto;margin:10px 0} .md a{color:var(--accent)}
+  .md blockquote{border-left:3px solid var(--line);margin:10px 0;padding:2px 12px;color:var(--muted)}
+  .md ul,.md ol{padding-left:22px}
+  .saved{font-size:11px;color:var(--ok)}
+</style>
+</head>
+<body>
+<header>
+  <h1>bonder <span style="font-weight:400;color:var(--muted)">viewer</span></h1>
+  <span class="tag" id="tagline">CoIP-MS / AP-MS &middot; parceiros no proteoma murino</span>
+  <span class="badge" id="mode">visualizacao + edicao (hospedado)</span>
+</header>
+<div class="wrap">
+  <aside>
+    <h3 style="margin-top:0">Corridas</h3>
+    <p class="hint">Resultados exportados das analises locais. Selecione uma corrida para
+      visualizar e curar (editar) os interatores.</p>
+    <div class="runs"><div id="runs"><p class="hint">Carregando...</p></div></div>
+  </aside>
+  <main>
+    <div class="tabs">
+      <button class="active" data-tab="resumo">Resumo / QC</button>
+      <button data-tab="interatores">Interatores (edicao)</button>
+      <button data-tab="volcano">Volcano</button>
+      <button data-tab="rede">Rede</button>
+      <button data-tab="ajuda">Ajuda e Tutoriais</button>
+    </div>
+
+    <section id="tab-resumo">
+      <div class="card"><div class="kv" id="summary"><div>Selecione uma corrida</div><div></div></div></div>
+      <div class="card">
+        <b>Metodo</b>
+        <p class="hint">Especificidade isca-presa: <code>SAINTexpress</code> (todas as iscas) e <code>MiST</code>
+        (isca viral NSs, desenho subtrativo: superexpressao vs WT). Quantitativo: <code>DEP/limma</code>
+        (R/Bioconductor). Background: CRAPome interno dos controles. O ranqueamento prioriza BFDR (SAINT)
+        e FDR (DEP); descritivos sao apenas QC. Esta e a versao <b>hospedada</b> (somente visualizacao e
+        curadoria); a analise pesada roda no servidor local.</p>
+      </div>
+    </section>
+
+    <section id="tab-interatores" class="hidden">
+      <div class="card">
+        <div class="toolbar">
+          <input type="search" id="filter" placeholder="filtrar por prey/gene...">
+          <label style="display:inline-flex;align-items:center;gap:6px;margin:0;color:var(--fg)">
+            <input type="checkbox" id="onlyValidated" style="width:auto"> so validados</label>
+          <span style="flex:1"></span>
+          <button class="secondary" id="expCur">Exportar curadoria (JSON)</button>
+          <button class="secondary" id="impCurBtn">Importar curadoria</button>
+          <input type="file" id="impCur" accept="application/json" class="hidden">
+          <button id="dlTsv">Baixar interatores + curadoria (TSV)</button>
+          <span class="saved" id="savedMsg"></span>
+        </div>
+        <div style="max-height:66vh;overflow:auto"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+        <p class="hint">Edite <b>Validado</b>, <b>Confianca (curada)</b> e <b>Nota</b>: as mudancas sao salvas
+        automaticamente neste navegador (localStorage) e podem ser exportadas/reimportadas em JSON.
+        * <b>log2fc</b>: do DEP/limma quando disponivel; sem R, mostra o <b>log2fc_descritivo</b>
+        (razao de medias IP/controle, apenas QC).</p>
+      </div>
+    </section>
+
+    <section id="tab-volcano" class="hidden">
+      <div class="card"><img id="volcano" alt="volcano" style="max-width:640px">
+      <p class="hint" id="volcanoHint"></p></div>
+    </section>
+
+    <section id="tab-rede" class="hidden">
+      <div class="card"><div id="cy"></div>
+      <p class="hint">Cinza = isca; azul = presa detectada. Arraste os nos. GraphML/Cytoscape estao na pasta da corrida.</p></div>
+    </section>
+
+    <section id="tab-ajuda" class="hidden">
+      <div class="card" style="padding:0">
+        <div class="docwrap">
+          <nav id="docnav" class="docnav"><p class="hint" style="padding:12px">Carregando...</p></nav>
+          <article id="docview" class="md"><p class="hint">Selecione um documento a esquerda.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const CUR_PREFIX = 'bonder.curation.v1.';
+let current = null;         // run_id atual
+let interactors = [];       // linhas do interactors.tsv (objetos)
+let columns = [];           // colunas presentes no TSV
+let curation = {};          // { prey: {validated, confidence, note} }
+let sortState = { col: null, asc: true };
+
+// ordem preferida de colunas (as que existirem sao mostradas, nesta ordem)
+const PREFERRED = ['prey','gene','confidence','bfdr','saint_score','log2fc','adj_p_value',
+                   'background_freq','observed_ip','observed_ctrl','fold_change',
+                   'mean_intensity_ip','mean_intensity_ctrl','p_value'];
+
+async function jget(url){ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error(url); return r.json(); }
+async function tget(url){ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error(url); return r.text(); }
+
+async function loadConfig(){
+  try{ const c = await jget('config.json');
+    if(c.title) $('#tagline').textContent = c.title;
+    if(c.version) $('#mode').textContent = 'v'+c.version+' - visualizacao + edicao';
+  }catch(e){ /* opcional */ }
+}
+
+async function loadRuns(){
+  let runs;
+  try{ runs = await jget('runs/index.json'); }
+  catch(e){ $('#runs').innerHTML = '<p class="hint">Nenhum bundle de corrida encontrado (runs/index.json).</p>'; return; }
+  runs = runs.runs || runs;   // aceita {runs:[...]} ou [...]
+  $('#runs').innerHTML = runs.map(r =>
+    `<div class="run" data-id="${r.run_id}"><span>${r.run_id}<br><span class="hint">${r.contrast||''}</span></span>
+     <span class="st ${r.status||'done'}">${r.status||'done'}</span></div>`).join('')
+    || '<p class="hint">Nenhuma corrida.</p>';
+  document.querySelectorAll('.run').forEach(el => el.onclick = () => selectRun(el.dataset.id, el));
+  if(runs.length && !current) selectRun(runs[0].run_id);
+}
+
+async function selectRun(id, el){
+  current = id;
+  document.querySelectorAll('.run').forEach(x=>x.classList.toggle('active', x.dataset.id===id));
+  let results = {}, status = {status:'done'};
+  try{ results = await jget(`runs/${id}/results.json`); }catch(e){}
+  try{ status = await jget(`runs/${id}/status.json`); }catch(e){}
+  renderSummary(id, results, status);
+  await loadInteractors(id, results);
+  renderVolcano(id, results);
+  maybeRenderNetwork();   // rede so renderiza quando a aba Rede esta ativa (lazy)
+}
+
+let netRenderedFor = null;
+function maybeRenderNetwork(){
+  if(current && netRenderedFor !== current && !$('#tab-rede').classList.contains('hidden')){
+    netRenderedFor = current;
+    renderNetwork(current);
+  }
+}
+
+function renderSummary(id, res, status){
+  const s = res.summary || {}, qc = res.qc || {};
+  $('#summary').innerHTML = `
+    <div>Corrida</div><div>${id}</div>
+    <div>Contraste</div><div>${(res.contrast&&res.contrast.name)||'-'} ${res.contrast&&res.contrast.strategy?('('+res.contrast.strategy+')'):''}</div>
+    <div>Status</div><div><span class="st ${status.status||'done'}">${status.status||'done'}</span></div>
+    <div>Motor / aquisicao</div><div>${s.engine||'-'} / ${s.acquisition||'-'} (${s.quant_type||'-'})</div>
+    <div>Proteinas / amostras</div><div>${s.n_proteins||'-'} / ${s.n_samples||'-'}</div>
+    <div>Contaminantes / iscas</div><div>${s.n_contaminants||0} / ${s.n_baits||0}</div>
+    <div>Valores validos (mediana)</div><div>${qc.median_valid_values!=null?qc.median_valid_values:'-'}</div>`;
+}
+
+// ---- interatores: carrega TSV completo, aplica curadoria salva ----
+function parseTSV(text){
+  const lines = text.replace(/\r/g,'').split('\n').filter(l => l.length);
+  if(!lines.length) return {cols:[], rows:[]};
+  const cols = lines[0].split('\t');
+  const rows = lines.slice(1).map(l => {
+    const cells = l.split('\t'); const o = {};
+    cols.forEach((c,i)=> o[c] = cells[i]);
+    return o;
+  });
+  return {cols, rows};
+}
+function loadCuration(id){
+  try{ return JSON.parse(localStorage.getItem(CUR_PREFIX+id)) || {}; }catch(e){ return {}; }
+}
+function saveCuration(){
+  localStorage.setItem(CUR_PREFIX+current, JSON.stringify(curation));
+  const m = $('#savedMsg'); m.textContent = 'salvo'; setTimeout(()=>m.textContent='', 1200);
+}
+
+async function loadInteractors(id, results){
+  curation = loadCuration(id);
+  try{
+    const txt = await tget(`runs/${id}/interactors.tsv`);
+    const p = parseTSV(txt); interactors = p.rows; columns = p.cols;
+  }catch(e){
+    // fallback: top_interactors do results.json
+    interactors = (results.top_interactors)||[]; columns = interactors.length? Object.keys(interactors[0]) : [];
+  }
+  renderInteractors();
+}
+
+function shownColumns(){
+  const present = PREFERRED.filter(c => columns.includes(c));
+  // garante prey e gene no inicio mesmo se faltarem no PREFERRED
+  return present.length? present : columns.slice(0, 8);
+}
+
+function fmt(v, col){
+  if(v===undefined||v===null||v==='') return '';
+  if(col==='log2fc' && (v===''||v==null)) return '';
+  const n = Number(v);
+  if(!Number.isNaN(n) && v!=='' && /^[-\d.eE+]+$/.test(v)) return Number.isInteger(n)? n : n.toFixed(3);
+  return v;
+}
+
+function renderInteractors(){
+  const cols = shownColumns();
+  const q = ($('#filter').value||'').toLowerCase();
+  const onlyVal = $('#onlyValidated').checked;
+  // cabecalho: colunas de dados (clicaveis p/ ordenar) + colunas de curadoria
+  $('#tbl thead').innerHTML = '<tr>' +
+    cols.map(c=>`<th data-col="${c}">${c==='log2fc'?'log2fc*':c}</th>`).join('') +
+    '<th>validado</th><th>confianca (curada)</th><th>nota</th></tr>';
+
+  let rows = interactors.slice();
+  if(sortState.col){
+    const c = sortState.col, dir = sortState.asc?1:-1;
+    rows.sort((a,b)=>{
+      let x=a[c], y=b[c]; const nx=Number(x), ny=Number(y);
+      if(!Number.isNaN(nx)&&!Number.isNaN(ny)){ return (nx-ny)*dir; }
+      return String(x||'').localeCompare(String(y||''))*dir;
+    });
+  }
+  const body = [];
+  for(const r of rows){
+    const prey = r.prey;
+    const cur = curation[prey] || {};
+    if(q && !((prey||'').toLowerCase().includes(q) || (r.gene||'').toLowerCase().includes(q))) continue;
+    if(onlyVal && !cur.validated) continue;
+    let tds = cols.map(c=>{
+      let v = r[c];
+      if(c==='log2fc' && (v===undefined||v===null||v==='')) v = r['log2fc_descriptive'];
+      if(c==='confidence') return `<td><span class="pill ${v}">${v||''}</span></td>`;
+      return `<td>${fmt(v,c)}</td>`;
+    }).join('');
+    const conf = cur.confidence||'';
+    tds += `<td style="text-align:center"><input type="checkbox" data-prey="${prey}" class="cVal" ${cur.validated?'checked':''}></td>`;
+    tds += `<td><select data-prey="${prey}" class="cConf">
+       <option value=""${conf===''?' selected':''}>-</option>
+       <option value="alta"${conf==='alta'?' selected':''}>alta</option>
+       <option value="media"${conf==='media'?' selected':''}>media</option>
+       <option value="baixa"${conf==='baixa'?' selected':''}>baixa</option>
+       <option value="descartado"${conf==='descartado'?' selected':''}>descartado</option></select></td>`;
+    tds += `<td><input type="text" data-prey="${prey}" class="cNote" value="${(cur.note||'').replace(/"/g,'&quot;')}" placeholder="anotacao..."></td>`;
+    body.push('<tr>'+tds+'</tr>');
+  }
+  $('#tbl tbody').innerHTML = body.join('') || '<tr><td class="hint">Nenhuma linha.</td></tr>';
+
+  // handlers de ordenacao
+  document.querySelectorAll('#tbl thead th[data-col]').forEach(th => th.onclick = () => {
+    const c = th.dataset.col;
+    sortState = { col:c, asc: sortState.col===c ? !sortState.asc : true };
+    renderInteractors();
+  });
+  // handlers de edicao
+  document.querySelectorAll('.cVal').forEach(x => x.onchange = e => {
+    const p = e.target.dataset.prey; curation[p] = curation[p]||{}; curation[p].validated = e.target.checked; saveCuration();
+  });
+  document.querySelectorAll('.cConf').forEach(x => x.onchange = e => {
+    const p = e.target.dataset.prey; curation[p] = curation[p]||{}; curation[p].confidence = e.target.value; saveCuration();
+  });
+  document.querySelectorAll('.cNote').forEach(x => x.oninput = e => {
+    const p = e.target.dataset.prey; curation[p] = curation[p]||{}; curation[p].note = e.target.value; saveCuration();
+  });
+}
+
+function renderVolcano(id, res){
+  const has = res.artifacts && res.artifacts.volcano_png;
+  $('#volcano').classList.toggle('hidden', !has);
+  $('#volcanoHint').textContent = has ? '' : 'Volcano requer a etapa DEP/limma (R). Sem R, veja a tabela (SAINT/descritivos).';
+  if(has) $('#volcano').src = `runs/${id}/volcano.png`;
+}
+
+async function renderNetwork(id){
+  try{
+    const net = await jget(`runs/${id}/network.json`);
+    cytoscape({ container: $('#cy'), elements: net.elements,
+      style:[
+        {selector:'node',style:{'label':'data(label)','font-size':9,'color':getComputedStyle(document.body).color,
+          'background-color':'#4c8bf5','width':16,'height':16}},
+        {selector:'node[?is_bait]',style:{'background-color':'#9aa4b2','width':30,'height':30,'font-size':12}},
+        {selector:'edge',style:{'width':1,'line-color':'#2a323c'}},
+        {selector:'edge[edge_type="reference"]',style:{'line-color':'#34a853','width':2}}
+      ],
+      layout:{name:'cose',animate:false} });
+  }catch(e){ $('#cy').innerHTML = '<p class="hint" style="padding:12px">Rede indisponivel para esta corrida.</p>'; }
+}
+
+// ---- exportar / importar curadoria + baixar TSV ----
+function download(name, text, mime){
+  const blob = new Blob([text], {type: mime||'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+$('#expCur').onclick = () => {
+  if(!current) return;
+  download(`curadoria_${current}.json`, JSON.stringify({run_id:current, curation}, null, 2), 'application/json');
+};
+$('#impCurBtn').onclick = () => $('#impCur').click();
+$('#impCur').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { try{
+      const obj = JSON.parse(rd.result); const c = obj.curation||obj;
+      curation = Object.assign(curation, c); saveCuration(); renderInteractors();
+      alert('Curadoria importada.');
+    }catch(err){ alert('JSON invalido: '+err.message); } };
+  rd.readAsText(f);
+};
+$('#dlTsv').onclick = () => {
+  if(!current) return;
+  const cols = shownColumns();
+  const head = cols.concat(['curado_validado','curado_confianca','curado_nota']);
+  const lines = [head.join('\t')];
+  for(const r of interactors){
+    const cur = curation[r.prey]||{};
+    const vals = cols.map(c=>{
+      let v = r[c]; if(c==='log2fc' && (v===undefined||v===null||v==='')) v = r['log2fc_descriptive'];
+      return v===undefined||v===null?'':String(v);
+    });
+    vals.push(cur.validated?'1':'0', cur.confidence||'', (cur.note||'').replace(/\t/g,' '));
+    lines.push(vals.join('\t'));
+  }
+  download(`interatores_curados_${current}.tsv`, lines.join('\n'), 'text/tab-separated-values');
+};
+
+$('#filter').oninput = renderInteractors;
+$('#onlyValidated').onchange = renderInteractors;
+
+// ---- abas ----
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['resumo','interatores','volcano','rede','ajuda'].forEach(t =>
+    $('#tab-'+t).classList.toggle('hidden', t !== b.dataset.tab));
+  if(b.dataset.tab === 'rede') maybeRenderNetwork();
+  if(b.dataset.tab === 'ajuda' && !docsLoaded) renderDocs();
+});
+
+// ---- Ajuda: serve os .md do bundle ----
+let docsLoaded = false;
+async function renderDocs(){
+  let docs; try{ docs = await jget('docs/index.json'); }
+  catch(e){ $('#docnav').innerHTML = '<p class="hint" style="padding:12px">Sem documentos no bundle.</p>'; return; }
+  docs = docs.docs || docs;
+  docsLoaded = true;
+  const cats = {};
+  docs.forEach(d => { (cats[d.category] = cats[d.category] || []).push(d); });
+  let nav = '';
+  Object.keys(cats).forEach(cat => {
+    nav += `<div class="cat">${cat}</div>`;
+    nav += cats[cat].map(d => `<button data-doc="${d.id}" data-file="${d.file}">${d.title}</button>`).join('');
+  });
+  $('#docnav').innerHTML = nav;
+  document.querySelectorAll('#docnav button').forEach(b => b.onclick = () => openDoc(b.dataset.file, b));
+  const first = document.querySelector('#docnav button');
+  if(first) openDoc(first.dataset.file, first);
+}
+async function openDoc(file, btn){
+  document.querySelectorAll('#docnav button').forEach(x => x.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  $('#docview').innerHTML = '<p class="hint">Carregando...</p>';
+  let md; try{ md = await tget('docs/'+file); }
+  catch(e){ $('#docview').innerHTML = '<p class="hint">Documento indisponivel.</p>'; return; }
+  $('#docview').innerHTML = (window.marked ? marked.parse(md) : ('<pre>'+md.replace(/</g,'&lt;')+'</pre>'));
+}
+
+loadConfig(); loadRuns();
+</script>
+</body>
+</html>
