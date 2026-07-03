@@ -58,3 +58,27 @@ sources:
     version: "user-supplied"
     url: null                        # exportacao CRAPome fornecida pelo usuario
     sha256: null
+
+# =============================================================================
+# DIGESTAO IN SILICO do proteoma murino (base de referencia peptideo->proteina).
+#
+# Gera o espaco peptidico teorico murino (ver bonder/db/digest.py). Sustenta o
+# mapeamento peptideo->proteina, a proteotipia (peptideo unico de UMA proteina)
+# e a leitura de background/threshold do desenho SUBTRATIVO (NSs vs WT).
+# Rode: 'bonder db digest' (baixa o proteoma se preciso e gera a base).
+# =============================================================================
+proteome_murine:
+  # Raiz de saida da base digerida (sobrescrevivel por BONDER_PROTEOME_MURINE).
+  # Fica FORA do repo (dado grande); no ambiente do autor: drive de dados E:.
+  out_root: "E:/data/proteome_murine"
+  # Fonte do proteoma a digerir: 'uniprot_mouse' (reviewed, ver sources acima).
+  source: uniprot_mouse
+  include_trembl: false              # incluir nao-revisados (amplia o espaco peptidico)
+  digestion:
+    enzyme: trypsin                  # corta apos K/R exceto antes de P
+    missed_cleavages: 2
+    min_length: 7
+    max_length: 50
+    min_mass: null                   # sem filtro de massa por padrao (massa e gravada)
+    max_mass: null
+    fixed_cys_carbamidomethyl: true  # mod fixa padrao (iodoacetamida)

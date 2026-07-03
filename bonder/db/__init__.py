@@ -4,6 +4,15 @@
 from bonder.db.downloader import Downloader, sha256_of
 from bonder.db.uniprot import MouseReference, read_fasta, sequence_lengths, iter_fasta
 from bonder.db.baits import build_search_fasta, resolve_bait_sequences, validate_baits
+from bonder.db.digest import (
+    DigestParams,
+    DigestResult,
+    cleave,
+    peptide_mass,
+    digest_proteome,
+    write_digest,
+    profile as digest_profile,
+)
 from bonder.db import string_biogrid, crapome
 
 __all__ = [
@@ -16,6 +25,13 @@ __all__ = [
     "build_search_fasta",
     "resolve_bait_sequences",
     "validate_baits",
+    "DigestParams",
+    "DigestResult",
+    "cleave",
+    "peptide_mass",
+    "digest_proteome",
+    "write_digest",
+    "digest_profile",
     "string_biogrid",
     "crapome",
 ]

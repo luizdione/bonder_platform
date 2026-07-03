@@ -21,6 +21,19 @@ baits:
     # Cabecalho com que a isca aparece no FASTA de busca (search_db.fasta):
     search_db_header: "bait|NSs_ICOARACI|NSs Icoaraci orthobunyavirus"
     ortholog_prior: false            # sem ortologo murino -> prior DESLIGADO
+    # --- DESENHO: PROTEOMA SUBTRATIVO (nao e uma co-IP com anticorpo anti-tag) --
+    design:
+      strategy: subtractive
+      system: "Macrofagos murinos superexpressando NSs (Icoaraci)"
+      negative_control: "Macrofagos murinos wild-type (WT)"
+      threshold: negative_control    # o WT define o threshold negativo (background)
+      rationale: >
+        Proteoma subtrativo: os parceiros candidatos de NSs sao as proteinas
+        murinas ENRIQUECIDAS nos macrofagos que superexpressam NSs e AUSENTES/
+        reduzidas nos macrofagos wild-type (WT), que servem de threshold negativo.
+        O contraste NSs_vs_CTRL (samples.yaml) compara IP_NSs (superexpressao) vs
+        CTRL_NSs (WT). SAINT/MiST quantificam a especificidade sobre esse delta;
+        DEP/limma dao o enriquecimento diferencial de suporte.
     scoring:
       saint: true
       mist: true                     # paradigma host-pathogen (Krogan lab)
@@ -28,6 +41,8 @@ baits:
       Isca viral. Interatores esperados sao proteinas do hospedeiro (camundongo).
       Sem ortologo murino: a priorizacao por ortologia fica desabilitada; a
       priorizacao exploratoria por embeddings, se ligada, usa novidade/outlier.
+      Como o sistema e murino (host), a base de digestao in silico murina
+      (proteome_murine em databases.yaml) e a referencia de espaco peptidico.
 
   # --- Isca 2: Galectina-3 humana (LGALS3) -----------------------------------
   - id: LGALS3_HUMAN
@@ -40,6 +55,14 @@ baits:
       mouse_gene: Lgals3
       mouse_accession: P16110        # ortologo MURINO: manter DISTINTO da isca
     ortholog_prior: true
+    design:
+      strategy: ap_ms_specificity    # co-IP classica: isca vs controle pareado
+      system: "Amostras murinas (host)"
+      negative_control: "Controle pareado (IgG/mock/parental) murino"
+      rationale: >
+        A analise da Galectina-3 tambem e em sistema MURINO (host). A base de
+        digestao in silico murina (proteome_murine) e a mesma referencia de
+        espaco peptidico; a especificidade isca-presa vem do SAINT (IP vs CTRL).
     scoring:
       saint: true
       mist: false
@@ -47,4 +70,5 @@ baits:
       Isca humana. NAO colapsar com o ortologo murino Lgals3 (P16110): a
       sequencia humana e a isca (excluida do scoring de preys), mas o Lgals3
       murino co-precipitado e um achado legitimo (auto-associacao/interacao).
-      Peptideos compartilhados entre P17931 e P16110 devem ser sinalizados.
+      Peptideos compartilhados entre P17931 e P16110 devem ser sinalizados
+      (usar a base de digestao murina para identificar peptideos proteotipicos).

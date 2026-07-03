@@ -11,11 +11,30 @@
 #
 # Recomendacao de desenho (publicabilidade): >= 3 replicas biologicas por grupo
 # e um controle negativo pareado (IgG/mock/linhagem parental) por isca.
+#
+# METODOLOGIA (ver baits.yaml -> design, e docs/METODOLOGIA.md):
+#   NSs   -> PROTEOMA SUBTRATIVO. IP_NSs = macrofagos murinos superexpressando
+#            NSs; CTRL_NSs = macrofagos murinos WILD-TYPE (WT), o threshold
+#            negativo. Candidato = enriquecido no NSs e ausente/reduzido no WT.
+#   LGALS3 -> co-IP classica (isca vs controle pareado), tambem em host murino.
 # =============================================================================
 schema_version: 1
 
+# Descricao do desenho (documental; o loader le apenas 'samples' e 'contrasts').
+design:
+  NSs_ICOARACI:
+    strategy: subtractive
+    test_condition: IP_NSs            # macrofagos superexpressando NSs
+    control_condition: CTRL_NSs       # macrofagos wild-type (WT) = threshold negativo
+  LGALS3_HUMAN:
+    strategy: ap_ms_specificity
+    test_condition: IP_LGALS3
+    control_condition: CTRL_LGALS3    # controle pareado murino
+
 samples:
-  # ---- Isca 1: NSs (Icoaraci) ----
+  # ---- Isca 1: NSs (Icoaraci) - PROTEOMA SUBTRATIVO ----
+  # IP_NSs  = macrofagos murinos superexpressando NSs (teste)
+  # CTRL_NSs = macrofagos murinos wild-type (WT) = threshold negativo
   - sample: NSs_IP_1
     condition: IP_NSs
     bait_id: NSs_ICOARACI
@@ -95,9 +114,11 @@ samples:
 contrasts:
   - name: NSs_vs_CTRL
     bait_id: NSs_ICOARACI
-    test: IP_NSs
-    control: CTRL_NSs
+    test: IP_NSs                       # macrofagos superexpressando NSs
+    control: CTRL_NSs                  # macrofagos WT (threshold negativo subtrativo)
+    strategy: subtractive
   - name: LGALS3_vs_CTRL
     bait_id: LGALS3_HUMAN
     test: IP_LGALS3
-    control: CTRL_LGALS3
+    control: CTRL_LGALS3               # controle pareado murino
+    strategy: ap_ms_specificity
