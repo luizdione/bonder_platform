@@ -1,0 +1,42 @@
+# PMM - configuracao da memoria do projeto. Editavel. Formato estavel.
+version: 1
+
+project:
+  name: "bonder-src"
+  slug: "bonder_src"
+  created: "2026-07-11"
+
+# Niveis de memoria (ordem = prioridade de carregamento)
+memory_levels:
+  active: [CLAUDE.md, PROJECT_STATE.md, TASKS.md, CONTEXT.md]
+  project: [DECISIONS.md, KNOWLEDGE.md, ROADMAP.md, CHANGELOG.md, ISSUES.md]
+
+# Orcamentos de tokens (estimativa ~= chars/4). Metas, nao limites rigidos.
+budgets:
+  active_tokens_total: 20000
+  active_tokens_warn: 15000
+  file_tokens_warn:
+    CLAUDE.md: 4000
+    PROJECT_STATE.md: 4000
+    TASKS.md: 4000
+    CONTEXT.md: 6000
+
+# Limiares de compressao / arquivamento
+thresholds:
+  done_tasks_before_archive: 15
+  stale_state_days: 21
+
+compression:
+  keep_recent_changelog_versions: 5
+  consolidate_decisions_after: 25
+
+# Integracao com Git (a skill NUNCA faz commit/push sozinha)
+git:
+  mode: auto      # auto | ignore | track   (auto: strict->ignore, senao track)
+  policy: auto    # auto | strict | app     (strict = repositorio de paper)
+  autocommit: false
+
+# Onde plantar o ponteiro de bootstrap (raiz do projeto)
+bootstrap:
+  targets: [CLAUDE.md]   # pode incluir AGENTS.md (Codex/outros)
+  use_imports: true      # usa @import do Claude Code quando disponivel
