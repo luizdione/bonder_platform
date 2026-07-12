@@ -8,7 +8,7 @@
 Plataforma de codigo **pronta em v0.1.0**; o gargalo agora e **gerar os dados
 experimentais**: submeter as amostras de CoIP/AP-MS (macrofagos murinos) a uma
 plataforma de espectrometria de massas e obter as saidas de busca (.raw + tabelas)
-para entao rodar o pipeline com dados reais. Em paralelo, memoria PMM inicializada.
+para entao rodar o pipeline com dados reais.
 
 ## Funcionalidades prontas
 - Ingesta unificada (`bonder.io`): MaxQuant/DIA-NN/FragPipe/generico -> MSDataset;
@@ -21,7 +21,6 @@ para entao rodar o pipeline com dados reais. Em paralelo, memoria PMM inicializa
 - Autoteste do pipeline validado em **dados sinteticos**.
 
 ## Em desenvolvimento
-- Inicializacao e preenchimento da memoria PMM (esta sessao).
 - Preparo da submissao a plataforma de MS: `formularios/` (3 formularios DOCX
   preenchidos + e-mail rascunho + recomendacao de instrumento + pendencias).
 
@@ -44,13 +43,15 @@ para entao rodar o pipeline com dados reais. Em paralelo, memoria PMM inicializa
 
 ## Resumo da ultima sessao
 - **Data:** 2026-07-11
-- Memoria PMM inicializada e **preenchida com conteudo real** (CLAUDE, CONTEXT,
-  PROJECT_STATE, TASKS + Nivel 2), sem placeholders.
-- Migracao: `CHANGELOG.md` canonico segue na **raiz**; o do PMM apenas aponta p/
-  ele (sem duplicar).
-- Estado do codigo: **v0.1.0** (2026-07-02). Repositorio proprio `luizdione/bonder`
-  (privado); **desacoplado do `docking_suite`** (2026-07-11). Bonder = PPI por MS,
-  nao docking.
-- Atividade real mais recente = `formularios/` (2026-07-03): preparo da submissao
-  de amostras a plataforma de MS (digestao, dessalinizacao POROS R2, LC-MS/MS
-  Q Exactive HF-X) + e-mail + recomendacao de instrumento HF-X + DIA.
+- **Desacoplamento do `docking_suite` concluido.** Memoria purgada de mirror/
+  upstream/sync; bonder reafirmado como dedicado **SO a PPI por espectrometria de
+  massas** (nao docking molecular).
+- **Repositorio proprio resetado do zero:** historico antigo (linhagem
+  docking_suite) descartado; `luizdione/bonder` (privado) agora tem **1 commit
+  unico** `adc37a3` com a versao completa. `sync.ps1` removido; `formularios/` fora
+  do git (gitignore); gate `git_dione` (app) limpo; commit sem trailer de IA.
+- **`docking_suite` limpo do bonder:** branch `claude/bonder-proteome-platform-k8m6pa`
+  (unico lugar com `bonder/`) deletado e PR #1 fechado; `main` (docking) intacto.
+  SHA do branch recuperavel: `e03d8d2`.
+- Detalhe completo desta sessao: `archive/sessions/`. Proximo gargalo real: gerar
+  os dados de MS (ver `formularios/` e Proximos passos).

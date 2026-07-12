@@ -29,6 +29,7 @@
 ## DONE
 - [x] (T-0001) 2026-07-11 - Preencher a memoria do projeto (CLAUDE, PROJECT_STATE,
   CONTEXT, TASKS + Nivel 2) com conteudo real; migrar changelog sem duplicar.
-- [x] (T-0008) 2026-07-11 - Desacoplar do `docking_suite`: remover `sync.ps1`, purgar
-  mirror/upstream da memoria, e publicar em `luizdione/bonder` (privado, commit d537168).
-  Bonder = PPI por espectrometria de massas.
+- [x] (T-0008) 2026-07-11 - Desacoplar do `docking_suite`: purgar mirror/upstream da
+  memoria, remover `sync.ps1`, **resetar `luizdione/bonder` do zero** (1 commit
+  `adc37a3`) e **limpar o `docking_suite`** (branch bonder deletado, PR #1 fechado;
+  main/docking intacto). Bonder = PPI por espectrometria de massas.

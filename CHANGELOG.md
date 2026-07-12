@@ -11,6 +11,16 @@ Todas as mudancas relevantes da plataforma. Formato baseado em
   metodologia, reprodutibilidade, versionamento) e a licenca, renderizados no
   navegador. Endpoints `GET /api/docs` e `GET /api/docs/<id>`.
 
+### Alterado
+- **Projeto desacoplado do `docking_suite`**: `bonder` passa a ser repositorio
+  proprio e independente (`luizdione/bonder`), dedicado exclusivamente a interacao
+  proteina-proteina por espectrometria de massas. Sem vinculo (codigo ou sync) com
+  projetos de docking/estrutura.
+
+### Removido
+- `sync.ps1` (sincronizacao unidirecional a partir do `docking_suite`): o codigo
+  passa a viver apenas neste repositorio.
+
 ## [0.1.0] - 2026-07-02
 
 Primeira versao do subprojeto `bonder` (plataforma CoIP-MS / AP-MS para
