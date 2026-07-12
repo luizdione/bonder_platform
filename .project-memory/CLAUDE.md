@@ -15,7 +15,7 @@
   wrappers R/Bioconductor (MSstats/DEP/limma) via Rscript; Docker (CPU padrao +
   overlay GPU CUDA 12.4 p/ RTX 3060). Testes: pytest (nucleo CPU).
 - **Projeto-piloto:** 2 iscas EXOGENAS ao camundongo, cada uma em uma Co-IP
-  separada contra macrofagos murinos: **NSs** do ortobunyavirus Icoaraci (viral,
+  separada contra macrofagos murinos: **NSs** do phlebovirus Icoaraci (grupo Bujaru; viral,
   desenho subtrativo NSs-superexp vs WT) e **Galectina-3** humana (LGALS3,
   P17931). Os parceiros buscados sao proteinas de camundongo.
 

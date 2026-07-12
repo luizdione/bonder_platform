@@ -28,8 +28,10 @@ sources:
     # Tabela id<->gene<->xrefs (para crosswalks):
     tsv_url: "https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary,gene_synonym,protein_name,xref_string,xref_biogrid&query=%28reviewed%3Atrue%29+AND+%28organism_id%3A10090%29"
     include_trembl: false            # incluir nao-revisados (TrEMBL)?
-    sha256_fasta: null
-    sha256_tsv: null
+    # sha256 travado a partir do proteoma reusado (release 2024_06, 17267 seqs,
+    # baixado 2026-07-02). O downloader reusa o cache se este hash conferir.
+    sha256_fasta: "a103a735db36b1d8e087d6040fa61cb02b56ca04656ab72de35dd21ee93631e0"
+    sha256_tsv: "f0cb728fbf0e9b5e82b260deeb4011ff8126e416352db69c01ee981d4589fafb"
 
   string_mouse:
     description: "STRING v12.0 - rede PPI Mus musculus (10090)"
@@ -37,15 +39,15 @@ sources:
     links_url: "https://stringdb-downloads.org/download/protein.links.v12.0/10090.protein.links.v12.0.txt.gz"
     aliases_url: "https://stringdb-downloads.org/download/protein.aliases.v12.0/10090.protein.aliases.v12.0.txt.gz"
     min_combined_score: 400          # 400 = confianca media; 700 = alta
-    sha256_links: null
-    sha256_aliases: null
+    sha256_links: "803775e1d1a47864561e41944bf1f988094a836991e7cf13e4229233fc8cff3d"
+    sha256_aliases: "2f1ccd371548d9db5784d341984209431a26573c3b34f16161bfe9052168159c"
 
   biogrid_mouse:
     description: "BioGRID - interacoes Mus musculus (tab3)"
     version: "4.4.235"
     url: "https://downloads.thebiogrid.org/Download/BioGRID/Release-Archive/BIOGRID-4.4.235/BIOGRID-ORGANISM-4.4.235.tab3.zip"
     organism_file: "BIOGRID-ORGANISM-Mus_musculus-4.4.235.tab3.txt"
-    sha256: null
+    sha256: "4547644ed0157e4e2fcfd239f222a1be218f8a04e75081762b46b2772ffdb088"
 
   contaminants:
     description: "Contaminantes cRAP (thegpm) - filtro AP-MS"

@@ -7,7 +7,7 @@ orquestradas. Todo escore que sustenta uma conclusao vem de uma ferramenta
 ## 1. Desenho
 
 - **Amostra:** *Mus musculus* (taxid 10090), celulas in vitro.
-- **Iscas (exogenas):** NSs do ortobunyavirus *Icoaraci* (viral) e Galectina-3
+- **Iscas (exogenas):** NSs do phlebovirus *Icoaraci* (grupo Bujaru; viral) e Galectina-3
   humana (LGALS3, P17931). Parceiros = proteinas murinas.
 - **Controles:** IgG/mock/linhagem parental, pareados por isca.
 - **Replicas:** recomenda-se **>= 3 biologicas** por grupo. Com n=2-4, a decisao

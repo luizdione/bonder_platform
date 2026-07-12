@@ -12,13 +12,13 @@ Baixe a sequencia canonica exata (nao digite a mao):
 curl -L "https://rest.uniprot.org/uniprotkb/P17931.fasta" -o LGALS3_HUMAN.fasta
 ```
 
-## 2. NSs do ortobunyavirus Icoaraci (`NSs_ICOARACI`)
+## 2. NSs do phlebovirus Icoaraci - grupo Bujaru (`NSs_ICOARACI`)
 
 Sequencia especifica do seu isolado. Salve em `NSs_Icoaraci.fasta` com um
 cabecalho que combine com `search_db_header` em `baits.yaml`, por exemplo:
 
 ```
->bait|NSs_ICOARACI|NSs Icoaraci orthobunyavirus
+>bait|NSs_ICOARACI|NSs Icoaraci phlebovirus (Bujaru group)
 MSEQ...   (a sequencia de aminoacidos do seu isolado)
 ```
 

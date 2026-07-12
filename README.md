@@ -12,7 +12,7 @@ servidor**, sem software fechado/pago.
 
 > Projeto-piloto: duas iscas **exogenas** ao camundongo, cada uma em uma Co-IP
 > separada contra amostras murinas —
-> **NSs** do ortobunyavirus *Icoaraci* (isca viral) e **Galectina-3** humana
+> **NSs** do phlebovirus *Icoaraci* (isca viral, grupo Bujaru) e **Galectina-3** humana
 > (LGALS3, UniProt P17931). Os parceiros buscados sao proteinas de camundongo.
 
 ---

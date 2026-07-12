@@ -12,14 +12,14 @@ organism_sample:
   taxid: 10090
 
 baits:
-  # --- Isca 1: proteina nao-estrutural NSs do ortobunyavirus Icoaraci ---------
+  # --- Isca 1: proteina nao-estrutural NSs do phlebovirus Icoaraci (grupo Bujaru) --
   - id: NSs_ICOARACI
-    display_name: "NSs (Icoaraci orthobunyavirus)"
+    display_name: "NSs (Icoaraci phlebovirus, grupo Bujaru)"
     source: viral
     uniprot_accession: null          # sem acesso UniProt canonico assumido
     fasta: sequences/NSs_Icoaraci.fasta   # sequencia fornecida pelo usuario
     # Cabecalho com que a isca aparece no FASTA de busca (search_db.fasta):
-    search_db_header: "bait|NSs_ICOARACI|NSs Icoaraci orthobunyavirus"
+    search_db_header: "bait|NSs_ICOARACI|NSs Icoaraci phlebovirus (Bujaru group)"
     ortholog_prior: false            # sem ortologo murino -> prior DESLIGADO
     scoring:
       saint: true

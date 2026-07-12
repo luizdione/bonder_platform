@@ -26,10 +26,12 @@ def _run_id(prefix: str = "run") -> str:
 
 
 def cmd_db_sync(args) -> int:
+    import zipfile
     from bonder.db.downloader import Downloader
     cfg = load_config()
     dl = Downloader(cfg.data_root, offline=cfg.offline)
     sources = cfg.databases.get("sources", {})
+    biogrid = sources.get("biogrid_mouse", {})
     plan = [
         ("uniprot_fasta", sources.get("uniprot_mouse", {}).get("fasta_url"), "uniprot/mouse.fasta",
          sources.get("uniprot_mouse", {}).get("sha256_fasta")),
@@ -39,6 +41,8 @@ def cmd_db_sync(args) -> int:
          "string/10090.links.txt.gz", sources.get("string_mouse", {}).get("sha256_links")),
         ("string_aliases", sources.get("string_mouse", {}).get("aliases_url"),
          "string/10090.aliases.txt.gz", sources.get("string_mouse", {}).get("sha256_aliases")),
+        # BioGRID: pacote .zip multi-organismo; abaixo extraimos so o arquivo do camundongo.
+        ("biogrid_zip", biogrid.get("url"), "biogrid/organism.tab3.zip", biogrid.get("sha256")),
         ("contaminants", sources.get("contaminants", {}).get("url"), "contaminants/crap.fasta",
          sources.get("contaminants", {}).get("sha256")),
     ]
@@ -51,6 +55,15 @@ def cmd_db_sync(args) -> int:
             p = dl.fetch(name, url, dest, expected_sha256=sha)
             print("[ok]   %s -> %s" % (name, p))
             ok += 1
+            if name == "biogrid_zip":
+                # extrai o tab3 do Mus musculus de dentro do pacote multi-organismo
+                org_file = biogrid.get("organism_file")
+                if org_file:
+                    bdir = cfg.cache_path("biogrid", org_file).parent
+                    if not (bdir / org_file).exists():
+                        with zipfile.ZipFile(p) as zf:
+                            zf.extract(org_file, bdir)
+                    print("[ok]   biogrid_extract -> %s" % (bdir / org_file))
         except Exception as e:
             print("[erro] %s: %s" % (name, e))
     print("Sincronizacao: %d/%d fontes prontas em %s" % (ok, len(plan), cfg.data_root))
