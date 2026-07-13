@@ -50,10 +50,10 @@ sources:
     sha256: "4547644ed0157e4e2fcfd239f222a1be218f8a04e75081762b46b2772ffdb088"
 
   contaminants:
-    description: "Contaminantes cRAP (thegpm) - filtro AP-MS"
-    version: "2012.01.01"
-    url: "https://www.thegpm.org/crap/crap.fasta"
-    sha256: null
+    description: "Contaminantes cRAP (GPM) - filtro AP-MS. Mirror Zenodo (Gatto/camprotR, CC-BY)."
+    version: "gpm-zenodo-15115102"
+    url: "https://zenodo.org/records/15115102/files/crap_gpm.fasta?download=1"
+    sha256: "4b0e6e97ab1d618baa38be612a787d884a781e07f627b919c4b29ac064db5382"
 
   crapome_mouse:
     description: "CRAPome-style background (opcional; ou calculado dos controles do usuario)"

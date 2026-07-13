@@ -70,7 +70,9 @@
   (BONDER_DATA_ROOT = User env var): proteoma UniProt+idmap, STRING, BioGRID, search_db.
 - **Runtime local**: container **Docker** (padrao) ou env conda miniforge **`datascience`**
   (`python -m bonder.web.app`). As ANALISES rodam LOCALMENTE em **http://localhost:8080**.
-- **Hostinger = SO visualizacao** dos resultados (online); nao roda analise.
+- **Hostinger = SO visualizacao** dos resultados (online); nao roda analise. Publicacao:
+  `bonder export --run <id>` (ou o link "baixar HTML estatico" no dashboard) gera um HTML
+  auto-contido por corrida; subir no hPanel manualmente (sem deploy automatico).
 - Override local do compose: `docker/docker-compose.local.yml` (bind de E: em `/data`;
   gitignored). Subir: `docker compose -f docker/docker-compose.yml -f
   docker/docker-compose.local.yml up --build -d`.

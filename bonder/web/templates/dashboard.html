@@ -187,7 +187,8 @@ function renderSummary(id, d){
     <div>Motor / aquisicao</div><div>${s.engine||'-'} / ${s.acquisition||'-'} (${s.quant_type||'-'})</div>
     <div>Proteinas / amostras</div><div>${s.n_proteins||'-'} / ${s.n_samples||'-'}</div>
     <div>Contaminantes / iscas</div><div>${s.n_contaminants||0} / ${s.n_baits||0}</div>
-    <div>Valores validos (mediana)</div><div>${qc.median_valid_values||'-'}</div>`;
+    <div>Valores validos (mediana)</div><div>${qc.median_valid_values||'-'}</div>
+    <div>Exportar</div><div><a href="/api/runs/${id}/export" title="Pagina HTML estatica para publicar (ex.: hPanel/Hostinger)">baixar HTML estatico</a></div>`;
 }
 
 function renderTable(res){

@@ -105,6 +105,19 @@ def cmd_list_contrasts(args) -> int:
     return 0
 
 
+def cmd_export(args) -> int:
+    """Exporta uma corrida como HTML estatico auto-contido (para o hPanel/site)."""
+    from bonder.web.export import export_run
+    cfg = load_config()
+    run_dir = cfg.runs_dir / args.run
+    if not run_dir.exists():
+        print("Corrida inexistente: %s" % run_dir, file=sys.stderr)
+        return 2
+    out = export_run(run_dir, args.out)
+    print("HTML estatico: %s" % out)
+    return 0
+
+
 def cmd_selftest(args) -> int:
     """Autoteste do pipeline (dados sinteticos). Exit 0 se PASSOU, 1 se FALHOU.
 
@@ -162,6 +175,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     lc = sub.add_parser("list-contrasts", help="lista contrastes de samples.yaml")
     lc.set_defaults(func=cmd_list_contrasts)
+
+    ex = sub.add_parser("export", help="exporta uma corrida como HTML estatico (hPanel/site)")
+    ex.add_argument("--run", required=True, help="run_id (nome do diretorio em runs/)")
+    ex.add_argument("--out", default=None, help="destino do .html (default: runs/<run>/report.html)")
+    ex.set_defaults(func=cmd_export)
 
     st = sub.add_parser("selftest", help="autoteste do pipeline (valida SAINT/R quando presentes)")
     st.set_defaults(func=cmd_selftest)

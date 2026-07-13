@@ -59,10 +59,15 @@ def build_search_fasta(
         return "\n".join(seq[i:i + width] for i in range(0, len(seq), width))
 
     with open(out_path, "w", encoding="utf-8") as out:
-        for src in (mouse_fasta, contaminants_fasta):
-            if src and Path(src).exists():
-                for _acc, header, seq in iter_fasta(src):
-                    out.write(">%s\n%s\n" % (header, _wrap(seq)))
+        if mouse_fasta and Path(mouse_fasta).exists():
+            for _acc, header, seq in iter_fasta(mouse_fasta):
+                out.write(">%s\n%s\n" % (header, _wrap(seq)))
+        if contaminants_fasta and Path(contaminants_fasta).exists():
+            # Contaminantes recebem prefixo CON__ no acesso: a deteccao em
+            # io/contaminants.py e por prefixo (o cRAP GPM nao traz um). Assim o motor
+            # de busca reporta o grupo como CON__<acc> e o pipeline o filtra.
+            for acc, _header, seq in iter_fasta(contaminants_fasta):
+                out.write(">CON__%s\n%s\n" % (acc, _wrap(seq)))
         for b in baits_cfg.get("baits", []):
             bid = b["id"]
             if bid in seqs:

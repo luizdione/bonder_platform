@@ -159,6 +159,18 @@ def create_app() -> "Flask":
             abort(404)
         return send_from_directory(f.parent, f.name, mimetype="text/tab-separated-values")
 
+    @app.get("/api/runs/<run_id>/export")
+    def run_export(run_id):
+        """Gera e baixa a pagina HTML estatica da corrida (para publicar no site)."""
+        from bonder.web.export import export_run
+        cfg = load_config()
+        rd = cfg.runs_dir / run_id
+        if not rd.exists():
+            abort(404)
+        out = export_run(rd)
+        return send_from_directory(out.parent, out.name, mimetype="text/html",
+                                   as_attachment=True, download_name="bonder_%s.html" % run_id)
+
     return app
 
 

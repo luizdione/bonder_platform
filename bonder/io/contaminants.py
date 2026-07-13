@@ -5,7 +5,7 @@
 Deteccao dupla (robusta): flags booleanas do motor E prefixos de acesso.
   MaxQuant   : 'Potential contaminant' == '+', 'Reverse' == '+', prefixos CON__ / REV__
   FragPipe   : prefixos 'contam_' e acessos rev_
-  cRAP/thegpm: lista de acessos conhecidos (keratinas, tripsina, BSA, etc.)
+  cRAP       : montado no search_db com prefixo CON__ (db/baits.build_search_fasta)
 
 Iscas NUNCA sao tratadas como contaminante mesmo que combinem com um prefixo.
 """
