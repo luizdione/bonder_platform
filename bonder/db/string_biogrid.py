@@ -48,8 +48,12 @@ def string_alias_map(aliases_path) -> Dict[str, str]:
     return amap
 
 
-def load_string_edges(links_path, aliases_path, min_score: int = 400) -> "pd.DataFrame":
-    """Arestas STRING mapeadas a UniProt, filtradas por combined_score >= min_score."""
+def load_string_edges(links_path, aliases_path, min_score: int = 400, keep=None) -> "pd.DataFrame":
+    """Arestas STRING mapeadas a UniProt, filtradas por combined_score >= min_score.
+
+    keep: se fornecido (conjunto de acessos UniProt), retem apenas arestas que tocam
+    algum acesso do conjunto - evita materializar a rede STRING inteira na memoria.
+    """
     amap = string_alias_map(aliases_path)
     rows = []
     with _open_text(links_path) as fh:
@@ -59,7 +63,10 @@ def load_string_edges(links_path, aliases_path, min_score: int = 400) -> "pd.Dat
             score = int(score)
             if score < min_score:
                 continue
-            rows.append((amap.get(p1), amap.get(p2), score, "STRING"))
+            a, b = amap.get(p1), amap.get(p2)
+            if keep is not None and a not in keep and b not in keep:
+                continue
+            rows.append((a, b, score, "STRING"))
     return pd.DataFrame(rows, columns=["a", "b", "score", "source"])
 
 

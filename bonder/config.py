@@ -64,6 +64,7 @@ class BonderConfig:
     config_dir: Path
     data_root: Path
     runs_dir: Path
+    inputs_dir: Path
     offline: bool
     baits: Dict[str, Any] = field(default_factory=dict)
     samples: Dict[str, Any] = field(default_factory=dict)
@@ -121,12 +122,18 @@ def load_config() -> BonderConfig:
     if not runs_dir.is_absolute():
         runs_dir = (PROJECT_ROOT / runs_dir).resolve()
 
+    inputs_raw = os.environ.get("BONDER_INPUTS_DIR") or "inputs"
+    inputs_dir = Path(inputs_raw).expanduser()
+    if not inputs_dir.is_absolute():
+        inputs_dir = (PROJECT_ROOT / inputs_dir).resolve()
+
     offline = _as_bool(os.environ.get("BONDER_OFFLINE"), _as_bool(databases.get("offline"), False))
 
     return BonderConfig(
         config_dir=cfg_dir,
         data_root=data_root,
         runs_dir=runs_dir,
+        inputs_dir=inputs_dir,
         offline=offline,
         baits=baits,
         samples=samples,

@@ -63,6 +63,18 @@
 - Identidade do autor em manuscritos/metadados: Luiz Dione Barbosa de Melo -
   IFRJ - luiz.melo@ifrj.edu.br - ORCID 0000-0003-2445-9943.
 
+## Ambiente de execucao (host do autor)
+- **GPU RTX 3060 = "cerebro"**: etapas aceleradas (DIA-NN, ESM2, rescoring) via overlay
+  `docker-compose.gpu.yml` (profile gpu, sob demanda). O NUCLEO cientifico roda em CPU.
+- **Drive E: = dados pesados.** Cache do bonder em `E:\data\proteome_murine`
+  (BONDER_DATA_ROOT = User env var): proteoma UniProt+idmap, STRING, BioGRID, search_db.
+- **Runtime local**: container **Docker** (padrao) ou env conda miniforge **`datascience`**
+  (`python -m bonder.web.app`). As ANALISES rodam LOCALMENTE em **http://localhost:8080**.
+- **Hostinger = SO visualizacao** dos resultados (online); nao roda analise.
+- Override local do compose: `docker/docker-compose.local.yml` (bind de E: em `/data`;
+  gitignored). Subir: `docker compose -f docker/docker-compose.yml -f
+  docker/docker-compose.local.yml up --build -d`.
+
 ## Comandos essenciais
 - **Instalar:** `pip install -e ".[dev,web,ms,annotate]"`  (ou `make install`)
 - **Testes:** `python -m pytest -q`  (ou `make test`) - nucleo CPU, sem GPU/R

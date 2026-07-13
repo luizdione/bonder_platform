@@ -34,3 +34,6 @@ vendor/bin/*
 
 # docs internos de submissao a plataforma de MS (nao versionar)
 formularios/
+
+# override local do docker (caminhos desta maquina, ex.: bind mount de E:)
+docker/docker-compose.local.yml

@@ -39,6 +39,41 @@ def _tool_available(name: str) -> bool:
     return shutil.which(name) is not None
 
 
+def _load_reference_edges(cfg, keep=None):
+    """Arestas de referencia STRING + BioGRID do cache (None se ausentes/erro).
+
+    Best-effort: usadas so para desenhar arestas presa-presa conhecidas na rede;
+    qualquer falta/erro retorna None sem quebrar o pipeline. `keep` restringe o STRING
+    aos acessos de interesse (evita carregar a rede inteira).
+    """
+    try:
+        import pandas as pd
+        from bonder.db import string_biogrid
+    except ImportError:
+        return None
+    sources = cfg.databases.get("sources", {})
+    parts = []
+    links = cfg.cache_path("string", "10090.links.txt.gz")
+    aliases = cfg.cache_path("string", "10090.aliases.txt.gz")
+    if Path(links).exists() and Path(aliases).exists():
+        try:
+            min_score = int((sources.get("string_mouse", {}) or {}).get("min_combined_score", 400))
+            parts.append(string_biogrid.load_string_edges(links, aliases, min_score=min_score, keep=keep))
+        except Exception:
+            pass
+    org_file = (sources.get("biogrid_mouse", {}) or {}).get("organism_file")
+    if org_file:
+        tab3 = cfg.cache_path("biogrid", org_file)
+        if Path(tab3).exists():
+            try:
+                parts.append(string_biogrid.load_biogrid_edges(tab3))
+            except Exception:
+                pass
+    if not parts:
+        return None
+    return pd.concat(parts, ignore_index=True) if len(parts) > 1 else parts[0]
+
+
 def run_pipeline(
     input_path,
     contrast: Dict[str, Any],
@@ -139,12 +174,16 @@ def run_pipeline(
     # 8) anotacao + rede ---------------------------------------------------
     from bonder.annotate import build_interactome, to_cytoscape_json, export_graphml
     top = table.head(150)  # rede centrada nos melhores candidatos
-    g = build_interactome(contrast["bait_id"], top)
+    keep = set(top["prey"].astype(str)) if "prey" in top.columns else None
+    ref_edges = _load_reference_edges(cfg, keep=keep)  # STRING + BioGRID (None se ausentes)
+    g = build_interactome(contrast["bait_id"], top, edges=ref_edges)
     export_graphml(g, run_dir / "network.graphml")
     (run_dir / "network.json").write_text(
         json.dumps(to_cytoscape_json(g), indent=2, ensure_ascii=True), encoding="utf-8"
     )
-    log_step("network", "ok", n_nodes=g.number_of_nodes(), n_edges=g.number_of_edges())
+    n_ref = 0 if ref_edges is None else int(ref_edges.shape[0])
+    log_step("network", "ok", n_nodes=g.number_of_nodes(), n_edges=g.number_of_edges(),
+             reference_edges=n_ref)
 
     # 9) figuras + results.json -------------------------------------------
     volcano = report.volcano_plot(dep_df, run_dir / "volcano.png")

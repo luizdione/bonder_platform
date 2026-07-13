@@ -71,6 +71,29 @@ def create_app() -> "Flask":
             abort(404)
         return jsonify(d)
 
+    @app.get("/api/inputs")
+    def list_inputs():
+        """Lista as saidas de busca disponiveis na pasta de inputs (para o seletor)."""
+        cfg = load_config()
+        d = cfg.inputs_dir
+        exts = {".tsv", ".txt", ".csv"}
+        skip = ("leia-me", "leiame", "readme")  # instrucoes, nao saidas de busca
+        files = []
+        if d.exists():
+            for p in sorted(d.rglob("*")):
+                if p.is_file() and p.suffix.lower() in exts and not p.stem.lower().startswith(skip):
+                    try:
+                        stt = p.stat()
+                        files.append({
+                            "name": str(p.relative_to(d)).replace("\\", "/"),
+                            "path": str(p),
+                            "size": stt.st_size,
+                            "mtime": time.strftime("%Y-%m-%d %H:%M", time.localtime(stt.st_mtime)),
+                        })
+                    except OSError:
+                        pass
+        return jsonify({"inputs_dir": str(d), "files": files})
+
     @app.post("/api/run")
     def run():
         data = request.get_json(force=True, silent=True) or {}

@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>bonder - interactoma CoIP-MS (proteoma murino)</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/static/vendor/cytoscape.min.js"></script>
+<script src="/static/vendor/marked.min.js"></script>
 <style>
   :root{
     --bg:#0f1216; --panel:#171b21; --panel2:#1e242c; --line:#2a323c;
@@ -77,9 +77,15 @@
 <div class="wrap">
   <aside>
     <h3 style="margin-top:0">Nova corrida</h3>
-    <label>Saida do motor de busca (caminho no servidor)</label>
-    <input id="input" placeholder="/data/proteinGroups.txt">
-    <p class="hint">MaxQuant / FragPipe (DDA) ou DIA-NN (DIA). O motor e a aquisicao sao detectados automaticamente.</p>
+    <label>Arquivo de entrada
+      <button class="secondary" id="refreshInputs" style="width:auto;padding:2px 8px;margin:0;float:right;font-size:11px">atualizar</button>
+    </label>
+    <select id="inputSelect"><option value="">- selecione um arquivo -</option></select>
+    <p class="hint" id="inputsHint">Coloque a saida do motor de busca na pasta de inputs. MaxQuant/FragPipe (DDA) ou DIA-NN (DIA); o motor e a aquisicao sao detectados automaticamente.</p>
+    <label>report.tsv do DIA-NN (opcional)</label>
+    <select id="reportSelect"><option value="">- nenhum -</option></select>
+    <label>Ou caminho manual (avancado)</label>
+    <input id="input" placeholder="/inputs/report.pg_matrix.tsv">
     <label>Contraste (isca vs controle)</label>
     <select id="contrast">
       {% for c in contrasts %}<option value="{{ c.name }}">{{ c.name }} &mdash; {{ c.bait_id }}</option>{% endfor %}
@@ -220,8 +226,22 @@ async function renderNetwork(id){
   }catch(e){ $('#cy').innerHTML = '<p class="hint" style="padding:12px">Rede indisponivel.</p>'; }
 }
 
+async function loadInputs(){
+  let d; try{ d = await (await fetch('/api/inputs')).json(); }catch(e){ return; }
+  const opt = f => `<option value="${f.path}">${f.name} (${(f.size/1024).toFixed(0)} KB, ${f.mtime})</option>`;
+  $('#inputSelect').innerHTML = '<option value="">- selecione um arquivo -</option>' + d.files.map(opt).join('');
+  $('#reportSelect').innerHTML = '<option value="">- nenhum -</option>' + d.files.map(opt).join('');
+  $('#inputsHint').textContent = d.files.length
+    ? ('Pasta: ' + d.inputs_dir + ' (' + d.files.length + ' arquivo(s))')
+    : ('Nenhum arquivo em ' + d.inputs_dir + ' - coloque a saida de busca la e clique atualizar.');
+}
+$('#refreshInputs').onclick = (e) => { e.preventDefault(); loadInputs(); };
+
 $('#runBtn').onclick = async () => {
-  const body = { input: $('#input').value.trim(), contrast: $('#contrast').value };
+  const input = $('#input').value.trim() || $('#inputSelect').value;
+  if(!input){ alert('Selecione um arquivo de entrada (ou informe o caminho manual).'); return; }
+  const body = { input: input, contrast: $('#contrast').value };
+  const rep = $('#reportSelect').value; if(rep) body.report = rep;
   const r = await (await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
   if(r.error){ alert(r.error); return; }
   selectRun(r.run_id);
@@ -312,7 +332,7 @@ async function runSelftest(){
 $('#refreshHealth').onclick = renderHealth;
 $('#runSelftest').onclick = runSelftest;
 
-gpu(); loadRuns(); setInterval(loadRuns, 8000);
+gpu(); loadRuns(); loadInputs(); setInterval(loadRuns, 8000);
 </script>
 </body>
 </html>

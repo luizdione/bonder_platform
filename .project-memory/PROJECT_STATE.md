@@ -2,64 +2,55 @@
 
 > **Memoria ativa - Nivel 1.** Reflete **somente o estado atual**. **Sempre
 > reescrever**, nunca acumular historico. Manter enxuto (alvo < ~4k tokens).
-> Ultima atualizacao: 2026-07-12
+> Ultima atualizacao: 2026-07-13
 
 ## Objetivo atual
-Plataforma de codigo **pronta em v0.1.0**; o gargalo agora e **gerar os dados
-experimentais**. Aquisicao **confirmada = DIA (DIA-NN)** pelo colaborador, que
-entregara os `.raw`. Como o bonder ingere a **saida do DIA-NN** (`report.pg_matrix.tsv`
-+ `report.tsv`) e **nao le `.raw` direto**, a estrategia e **pedir o report ja
-processado ao laboratorio** (alternativa: rodar o DIA-NN localmente na RTX 3060). O
-**FASTA de busca e os bancos ja estao prontos** (falta so o cRAP).
+Plataforma **rodando localmente em container** (http://localhost:8080, healthy) e com
+**seletor de arquivos** pronto para receber os dados; o gargalo agora e **gerar os dados
+experimentais**. Aquisicao **confirmada = DIA (DIA-NN)** pelo colaborador, que entregara
+os `.raw`. O bonder ingere a **saida do DIA-NN** (`report.pg_matrix.tsv` + `report.tsv`),
+nao o `.raw` -> pedir o report ja processado ao laboratorio.
 
 ## Funcionalidades prontas
-- Ingesta unificada (`bonder.io`): MaxQuant/DIA-NN/FragPipe/generico -> MSDataset;
-  deteccao automatica de motor e aquisicao; ausente=NaN.
+- Ingesta unificada (`bonder.io`): MaxQuant/DIA-NN/FragPipe/generico -> MSDataset.
 - Especificidade (SAINTexpress + MiST) e quantitativo (wrappers R DEP/limma/MSstats).
-- Bancos murinos fixados por versao + montagem do `search_db.fasta`; CLI completa
-  (`db sync`, `baits check`, `qc`, `run`, `list-contrasts`, `selftest`).
-- Dashboard Flask (localhost:8080) + fila RQ/Redis; abas Manutencao/autoteste e
-  Ajuda e Tutoriais. Docker CPU + overlay GPU. Testes do nucleo CPU passando.
-- Autoteste do pipeline validado em **dados sinteticos**.
-- **`search_db.fasta` montado e validado** (17269 seqs: 17267 murino + NSs 275 aa +
-  LGALS3 P17931; P16110 murino distinto).
-- **Bancos de referencia em cache** (`E:\data\proteome_murine`, BONDER_DATA_ROOT):
-  proteoma UniProt (2024_06), idmap TSV, STRING v12.0 (links+aliases) - todos com
-  **sha256 travado** em `databases.yaml` e validados offline. Falta cRAP e BioGRID.
+- **Container local no ar** (`docker compose` + override `docker-compose.local.yml`):
+  web healthy em **http://localhost:8080**, worker + redis up. SAINT + R OK; bancos de E:
+  montados em `/data`.
+- **Dashboard com seletor de inputs**: aba "Nova corrida" lista os arquivos da pasta de
+  inputs (`GET /api/inputs`; `BONDER_INPUTS_DIR=/data/inputs` = `E:\data\proteome_murine\inputs`),
+  seletor do `report.tsv` (DIA-NN) e botao atualizar. Basta soltar o arquivo na pasta.
+- **`search_db.fasta`** validado (17269 seqs: murino + NSs 275 aa + LGALS3 P17931).
+- **Bancos em cache** (`E:\data\proteome_murine`): UniProt fasta+idmap, STRING v12.0,
+  BioGRID 4.4.235 - sha256 travados. STRING/BioGRID entram na rede (T-0011).
 
 ## Em desenvolvimento
 - Submissao a plataforma de MS: e-mail (`EMAIL_plataforma.md`) afiado p/ DIA e
-  `PENDENCIAS_preenchimento.md` com aquisicao=DIA. Falta revisar/enviar o e-mail e
-  preencher os campos restantes.
+  `PENDENCIAS_preenchimento.md` com aquisicao=DIA. Falta revisar/enviar e preencher.
 
 ## Proximos passos
-- Revisar e **enviar o e-mail** (`formularios/EMAIL_plataforma.md`): confirmar quem
-  roda o DIA-NN, custo externo (IFRJ) e o uso do FASTA com as iscas. Entregar o
-  `search_db.fasta` ao laboratorio.
-- Resolver a fonte do **cRAP** (T-0009) e o **BioGRID** (T-0010); depois regenerar o
-  `search_db.fasta` com contaminantes.
-- Garantir o **SAINTexpress-int** (T-0006).
-- Quando o report DIA-NN chegar em `./inputs/`: `bonder qc` e depois `bonder run`
-  para `NSs_vs_CTRL` e `LGALS3_vs_CTRL`; relatorio e deposito PRIDE/ProteomeXchange.
+- Revisar e **enviar o e-mail** e entregar o `search_db.fasta` ao laboratorio.
+- **Quando o report DIA-NN chegar:** soltar `report.pg_matrix.tsv` (+ `report.tsv`) em
+  `E:\data\proteome_murine\inputs`, abrir localhost:8080, selecionar no dashboard e rodar
+  `NSs_vs_CTRL` / `LGALS3_vs_CTRL`; relatorio + deposito PRIDE (T-0007).
+- Resolver a fonte do **cRAP** (T-0009); regenerar o `search_db.fasta` com contaminantes.
 
 ## Riscos atuais
 - **Sem dados reais ainda** (`runs/` vazio); pipeline so exercitado em sinteticos.
-- **cRAP indisponivel** na fonte fixada (404/DNS-fail); `search_db.fasta` **sem
-  contaminantes** ate resolver T-0009.
-- **BioGRID nao entra no `db sync`** (T-0010): a rede so tera STRING ate incluir/extrair.
-- **SAINTexpress** compila best-effort/nao-fatal; pode faltar o binario -> passo
-  `saint` "pulado" ate colocar `vendor/bin/SAINTexpress-int` (T-0006).
-- **`.raw` nao entra direto no bonder**: depende de uma busca DIA-NN a montante.
-  Instrumento (HF-X) ainda a confirmar.
+- **cRAP indisponivel** na fonte fixada (404/DNS-fail); `search_db.fasta` sem contaminantes.
+- **`.raw` nao entra direto**: depende da busca DIA-NN a montante. Instrumento (HF-X) a confirmar.
 
 ## Resumo da ultima sessao
-- **Data:** 2026-07-12
-- **DIA confirmado**; bonder ingere a saida do DIA-NN, nao o `.raw`. Decisao: pedir o
-  report ao lab. E-mail afiado + `PENDENCIAS` com DIA -> T-0002/T-0003 IN_PROGRESS.
-- **Iscas + `search_db.fasta` (T-0004 DONE):** NSs corrigido (removido `*`; 275 aa);
-  LGALS3 P17931 baixada; proteoma reusado; validado (17269 seqs).
-- **Taxonomia corrigida:** Icoaraci -> **phlebovirus (grupo Bujaru)** em 11 lugares.
-- **Bancos consolidados em `E:\data\proteome_murine`** (BONDER_DATA_ROOT); `db sync`
-  concluido (4/5): UniProt fasta+idmap + STRING links+aliases, **sha256 travados** e
-  validados offline (T-0005 DONE). cRAP 404 (T-0009); BioGRID fora do db sync (T-0010).
-- `E:\data\bonder` antigo pode ser removido manualmente (sandbox nao deleta em E:).
+- **Data:** 2026-07-13
+- **Seletor de arquivos no dashboard (T-0012):** endpoint `/api/inputs` + `inputs_dir` na
+  config + seletor no HTML; pasta `E:\data\proteome_murine\inputs` montada em `/data/inputs`.
+  Validado E2E (endpoint lista o arquivo, seletores presentes, mount ok). Ha um
+  `EXEMPLO_report.pg_matrix.tsv` na pasta (o usuario pode apagar).
+- **Dashboard 100% offline:** cytoscape 3.30.2 e marked vendorizados em
+  `bonder/web/static/vendor/` (servidos em `/static/vendor`); removida a dependencia de CDN.
+- **Container BONDER no ar** (localhost:8080, healthy) via override `docker-compose.local.yml`
+  (bind de E: em /data). SAINT/R/bancos OK (T-0006). T-0010/T-0011/T-0005 fechadas.
+- **Setup do autor no CLAUDE.md:** GPU=cerebro (GPU sob demanda), E:=dados, Docker/conda
+  `datascience`, Hostinger=so visualizacao, analises em localhost:8080.
+- Mudancas de codigo (cli/orchestrator/string_biogrid/config/web/app + dashboard.html) +
+  configs no checkout principal, **prontas para commit** (sem trailer de IA).
